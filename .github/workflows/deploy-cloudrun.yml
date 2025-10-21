@@ -33,8 +33,6 @@ jobs:
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          install_components: run
 
       - name: Prepare Cloud Run environment file
         run: |
