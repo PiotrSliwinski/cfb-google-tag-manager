@@ -67,4 +67,5 @@ jobs:
 
       - name: Display deployed service URL
         if: ${{ steps.deploy.outputs.service_url != '' }}
-        run: echo "Service URL: ${{ steps.deploy.outputs.service_url }}"
+        run: |
+          echo "Service URL: ${{ steps.deploy.outputs.service_url }}"
