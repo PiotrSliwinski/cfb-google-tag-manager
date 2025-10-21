@@ -1,0 +1,70 @@
+name: Deploy Server-Side GTM
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.service_url }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      REGION: ${{ vars.CLOUD_RUN_REGION || 'us-central1' }}
+      SERVICE_NAME: ${{ vars.CLOUD_RUN_SERVICE_NAME || 'server-side-gtm' }}
+      CLOUD_RUN_ENV_VARS_YAML: ${{ secrets.CLOUD_RUN_ENV_VARS_YAML }}
+      GTM_ENV_VARS_YAML: ${{ secrets.GTM_ENV_VARS_YAML }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: run
+
+      - name: Prepare Cloud Run environment file
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          data = (
+              os.environ.get("CLOUD_RUN_ENV_VARS_YAML", "").strip()
+              or os.environ.get("GTM_ENV_VARS_YAML", "").strip()
+          )
+          if not data:
+            raise SystemExit(
+                "CLOUD_RUN_ENV_VARS_YAML secret is empty (legacy fallback GTM_ENV_VARS_YAML also missing). "
+                "Populate it with the Cloud Run environment configuration."
+            )
+
+          config_dir = Path("config")
+          config_dir.mkdir(parents=True, exist_ok=True)
+          (config_dir / "env.yaml").write_text(data, encoding="utf-8")
+          PY
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: ./scripts/deploy-cloud-run.sh
+        env:
+          PROJECT_ID: ${{ env.PROJECT_ID }}
+          REGION: ${{ env.REGION }}
+          SERVICE_NAME: ${{ env.SERVICE_NAME }}
+
+      - name: Display deployed service URL
+        if: ${{ steps.deploy.outputs.service_url != '' }}
+        run: echo "Service URL: ${{ steps.deploy.outputs.service_url }}"

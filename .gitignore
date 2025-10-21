@@ -1,0 +1,2 @@
+# Environment files contain secrets and must not be committed.
+config/env.yaml
