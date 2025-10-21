@@ -17,8 +17,8 @@ jobs:
       id-token: write
     env:
       PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      REGION: ${{ vars.CLOUD_RUN_REGION || 'us-central1' }}
-      SERVICE_NAME: ${{ vars.CLOUD_RUN_SERVICE_NAME || 'server-side-gtm' }}
+      REGION: ${{ vars.CLOUD_RUN_REGION || secrets.CLOUD_RUN_REGION || 'us-central1' }}
+      SERVICE_NAME: ${{ vars.CLOUD_RUN_SERVICE_NAME || secrets.CLOUD_RUN_SERVICE_NAME || 'server-side-gtm' }}
       CLOUD_RUN_ENV_VARS_YAML: ${{ secrets.CLOUD_RUN_ENV_VARS_YAML }}
       GTM_ENV_VARS_YAML: ${{ secrets.GTM_ENV_VARS_YAML }}
 

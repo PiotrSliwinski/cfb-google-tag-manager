@@ -43,14 +43,14 @@ Create the following secrets in your repository (Settings → Secrets and variab
 | `CLOUD_RUN_ENV_VARS_YAML` | ✅ | Environment configuration used during deployment (see next section). |
 | `GCP_SA_KEY` | ✅ | Service account key JSON used by the workflow to authenticate with Google Cloud. |
 
-✅ Required secrets. Optional configuration (such as region, service name, resource limits) can be supplied through GitHub repository **variables** (`vars.*`) or by editing the workflow defaults.
+✅ Required secrets. Optional configuration (such as region, service name, resource limits) can be supplied through GitHub repository **variables** (`vars.*`) or, for backward compatibility, secrets (`secrets.*`). Variables take precedence in the workflow.
 
 > The workflow still accepts a legacy `GTM_ENV_VARS_YAML` secret. If both are present, `CLOUD_RUN_ENV_VARS_YAML` takes precedence.
 
 Recommended (optional) repository variables:
 
-- `CLOUD_RUN_REGION` (defaults to `us-central1` if unset)
-- `CLOUD_RUN_SERVICE_NAME` (defaults to `server-side-gtm`)
+- `CLOUD_RUN_REGION` (defaults to `us-central1` if unset; the workflow also falls back to a `CLOUD_RUN_REGION` secret if defined)
+- `CLOUD_RUN_SERVICE_NAME` (defaults to `server-side-gtm`; likewise can fall back to a secret)
 - Any additional Cloud Run settings supported by `scripts/deploy-cloud-run.sh` (for example `MEMORY`, `CPU`, `MIN_INSTANCES`, `MAX_INSTANCES`, `INGRESS`, `VPC_CONNECTOR`). Define them in GitHub Actions → Variables if you prefer not to edit the workflow file.
 
 ## Preparing the environment configuration
